@@ -16,6 +16,7 @@
 
 package com.alibaba.cloud.nacos;
 
+import com.alibaba.cloud.nacos.annotation.NacosAnnotationProcessor;
 import com.alibaba.cloud.nacos.refresh.NacosContextRefresher;
 import com.alibaba.cloud.nacos.refresh.NacosRefreshHistory;
 import com.alibaba.cloud.nacos.refresh.SmartConfigurationPropertiesRebinder;
@@ -42,11 +43,9 @@ public class NacosConfigAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(value = NacosConfigProperties.class, search = SearchStrategy.CURRENT)
 	public NacosConfigProperties nacosConfigProperties(ApplicationContext context) {
-		if (context.getParent() != null
-				&& BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
-						context.getParent(), NacosConfigProperties.class).length > 0) {
-			return BeanFactoryUtils.beanOfTypeIncludingAncestors(context.getParent(),
-					NacosConfigProperties.class);
+		if (context.getParent() != null && BeanFactoryUtils.beanNamesForTypeIncludingAncestors(context.getParent(),
+				NacosConfigProperties.class).length > 0) {
+			return BeanFactoryUtils.beanOfTypeIncludingAncestors(context.getParent(), NacosConfigProperties.class);
 		}
 		return new NacosConfigProperties();
 	}
@@ -57,14 +56,17 @@ public class NacosConfigAutoConfiguration {
 	}
 
 	@Bean
-	public NacosConfigManager nacosConfigManager(
-			NacosConfigProperties nacosConfigProperties) {
+	public NacosConfigManager nacosConfigManager(NacosConfigProperties nacosConfigProperties) {
 		return new NacosConfigManager(nacosConfigProperties);
 	}
 
 	@Bean
-	public NacosContextRefresher nacosContextRefresher(
-			NacosConfigManager nacosConfigManager,
+	public NacosAnnotationProcessor nacosAnnotationProcessor() {
+		return new NacosAnnotationProcessor();
+	}
+
+	@Bean
+	public NacosContextRefresher nacosContextRefresher(NacosConfigManager nacosConfigManager,
 			NacosRefreshHistory nacosRefreshHistory) {
 		// Consider that it is not necessary to be compatible with the previous
 		// configuration
@@ -75,8 +77,7 @@ public class NacosConfigAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(search = SearchStrategy.CURRENT)
 	@ConditionalOnNonDefaultBehavior
-	public ConfigurationPropertiesRebinder smartConfigurationPropertiesRebinder(
-			ConfigurationPropertiesBeans beans) {
+	public ConfigurationPropertiesRebinder smartConfigurationPropertiesRebinder(ConfigurationPropertiesBeans beans) {
 		// If using default behavior, not use SmartConfigurationPropertiesRebinder.
 		// Minimize te possibility of making mistakes.
 		return new SmartConfigurationPropertiesRebinder(beans);
