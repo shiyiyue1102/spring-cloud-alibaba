@@ -43,6 +43,9 @@ public abstract class AbstractConfigChangeListener extends AbstractSharedListene
 		this.target = target;
 	}
 
+	protected void setLastContent(String lastContent) {
+		this.lastContent = lastContent;
+	}
 
 	@Override
 	public void innerReceive(String dataId, String group, String configInfo) {

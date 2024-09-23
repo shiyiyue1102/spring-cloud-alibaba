@@ -162,9 +162,10 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 
 				@Override
 				public String toString() {
-					return String.format("sca nacos config listener on bean method %s", bean + "#" + method.getName());
+					return String.format("sca nacos config listener on bean method %s", bean + "#" + methodSignature(method));
 				}
 			};
+			nacosPropertiesKeyListener.setLastContent(getGroupKeyContent(dataId, group));
 			nacosConfigManager.getConfigService().addListener(dataId, group,
 					nacosPropertiesKeyListener);
 			targetListenerMap.put(refreshTargetKey, nacosPropertiesKeyListener);
@@ -245,6 +246,10 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 						return String.format("[spring cloud alibaba nacos config key listener , key %s , target %s ] ", key, bean + "#" + methodSignature(method));
 					}
 				};
+				((AbstractConfigChangeListener) listener).fillContext(dataId, group);
+				if (!annotation.initNotify()) {
+					((AbstractConfigChangeListener) listener).setLastContent(configInfo);
+				}
 			}
 			else {
 				listener = new NacosConfigRefreshableListener(bean) {
@@ -508,7 +513,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 			filed.setInt(bean, Integer.parseInt(value));
 		}
 		else if (filed.getType() == Integer.class) {
-			ReflectionUtils.setField(filed, bean, Integer.parseInt(value));
+			ReflectionUtils.setField(filed, bean, Integer.valueOf(value));
 		}
 		else if (filed.getType() == long.class) {
 			filed.setLong(bean, Long.parseLong(value));
@@ -523,13 +528,13 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 			ReflectionUtils.setField(filed, bean, Boolean.valueOf(value));
 		}
 		else if (filed.getType() == double.class) {
-			filed.setDouble(bean, Double.valueOf(value));
+			filed.setDouble(bean, Double.parseDouble(value));
 		}
 		else if (filed.getType() == Double.class) {
 			ReflectionUtils.setField(filed, bean, Double.valueOf(value));
 		}
 		else if (filed.getType() == float.class) {
-			filed.setFloat(bean, Float.valueOf(value));
+			filed.setFloat(bean, Float.parseFloat(value));
 		}
 		else if (filed.getType() == Float.class) {
 			ReflectionUtils.setField(filed, bean, Float.valueOf(value));
@@ -546,7 +551,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 			ReflectionUtils.invokeMethod(method, bean, Integer.parseInt(value));
 		}
 		else if (parameterType == Integer.class) {
-			ReflectionUtils.invokeMethod(method, bean, Integer.parseInt(value));
+			ReflectionUtils.invokeMethod(method, bean, Integer.valueOf(value));
 		}
 		else if (parameterType == long.class) {
 			ReflectionUtils.invokeMethod(method, bean, Long.parseLong(value));
@@ -561,13 +566,13 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 			ReflectionUtils.invokeMethod(method, bean, Boolean.valueOf(value));
 		}
 		else if (parameterType == double.class) {
-			ReflectionUtils.invokeMethod(method, Double.valueOf(value));
+			ReflectionUtils.invokeMethod(method, bean, Double.parseDouble(value));
 		}
 		else if (parameterType == Double.class) {
 			ReflectionUtils.invokeMethod(method, bean, Double.valueOf(value));
 		}
 		else if (parameterType == float.class) {
-			ReflectionUtils.invokeMethod(method, Float.valueOf(value));
+			ReflectionUtils.invokeMethod(method, bean, Float.parseFloat(value));
 		}
 		else if (parameterType == Float.class) {
 			ReflectionUtils.invokeMethod(method, bean, Float.valueOf(value));
