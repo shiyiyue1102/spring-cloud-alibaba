@@ -18,7 +18,6 @@ package com.alibaba.cloud.nacos.annotation;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.text.SimpleDateFormat;
 
 import com.alibaba.nacos.api.exception.runtime.NacosDeserializationException;
 import com.fasterxml.jackson.annotation.JsonInclude;
