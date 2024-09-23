@@ -21,16 +21,13 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import com.alibaba.cloud.nacos.NacosConfigManager;
 import com.alibaba.nacos.api.config.ConfigChangeEvent;
@@ -181,58 +178,6 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 		return new HashSet<>(Arrays.asList(arrayKeys));
 	}
 
-	private void handleMethodNacosConfigKeyListener(NacosConfigKeyListener annotation, String beanName, Object bean, Method method) {
-		String dataId = annotation.dataId();
-		String group = annotation.group();
-		String key = annotation.key();
-		try {
-			Class<?>[] parameterTypes = method.getParameterTypes();
-
-			if (parameterTypes.length != 1 && !ConfigChangeItem.class.isAssignableFrom(parameterTypes[0])) {
-				throw new RuntimeException(
-						"@NacosConfigKeyListener must be over a method with as a single parameter with ConfigChangeItem");
-			}
-
-			String refreshTargetKey = beanName + "#method#" + methodSignature(method);
-			TargetRefreshable currentTarget = targetListenerMap.get(refreshTargetKey);
-			if (currentTarget != null) {
-				log.info("[Nacos Config] reset {} listener from  {} to {} ", refreshTargetKey,
-						currentTarget.getTarget(), bean);
-				targetListenerMap.get(refreshTargetKey).setTarget(bean);
-				return;
-			}
-
-			log.info("[Nacos Config] register {} listener on {} ", refreshTargetKey,
-					bean);
-
-			NacosPropertiesKeyListener listener = new NacosPropertiesKeyListener(bean, wrapArrayToSet(key)) {
-
-				@Override
-				public void configChanged(ConfigChangeEvent event) {
-					Collection<ConfigChangeItem> changeItems = event.getChangeItems();
-					List<ConfigChangeItem> collect = changeItems.stream().filter(a -> a.getKey().equals(key))
-							.collect(Collectors.toList());
-					if (!collect.isEmpty()) {
-						ReflectionUtils.invokeMethod(method, this.getTarget(), collect.get(0));
-					}
-				}
-
-				@Override
-				public String toString() {
-					return String.format("sca nacos config listener on bean method %s", bean + "#" + method.getName());
-				}
-			};
-			// annotation on string.
-			nacosConfigManager.getConfigService()
-					.addListener(dataId, group, listener);
-			targetListenerMap.put(refreshTargetKey, listener);
-		}
-		catch (Throwable e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-
 	private String methodSignature(Method method) {
 		StringBuilder signature = new StringBuilder(method.getName() + "(");
 		Class<?>[] parameterTypes = method.getParameterTypes();
@@ -250,6 +195,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 	private void handleMethodNacosConfigListener(NacosConfigListener annotation, String beanName, Object bean, Method method) {
 		String dataId = annotation.dataId();
 		String group = annotation.group();
+		String key = annotation.key();
 		try {
 			Type[] parameterTypes = method.getGenericParameterTypes();
 			if (parameterTypes.length != 1) {
@@ -257,6 +203,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 						"@NacosConfigListener  must be over a method with  a single parameter");
 			}
 
+			String configInfo = getGroupKeyContent(dataId, group);
 			String refreshTargetKey = beanName + "#method#" + methodSignature(method);
 			TargetRefreshable currentTarget = targetListenerMap.get(refreshTargetKey);
 			if (currentTarget != null) {
@@ -269,45 +216,70 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 			log.info("[Nacos Config] register {} listener on {} ", refreshTargetKey,
 					bean);
 
-			NacosConfigRefreshableListener nacosConfigRefreshableListener = new NacosConfigRefreshableListener(bean) {
+			TargetRefreshable listener = null;
+			if (org.springframework.util.StringUtils.hasText(key)) {
+				listener = new NacosPropertiesKeyListener(bean, wrapArrayToSet(key)) {
 
-				@Override
-				public Executor getExecutor() {
-					return null;
-				}
-
-				@Override
-				public void receiveConfigInfo(String configInfo) {
-					if (org.springframework.util.StringUtils.hasText(configInfo)) {
-
+					@Override
+					public void configChanged(ConfigChangeEvent event) {
 						try {
-							if (invokePrimitiveFiled(method, getTarget(), configInfo)) {
-								return;
-							}
+							ConfigChangeItem changeItem = event.getChangeItem(key);
+							String newConfig = changeItem == null ? null : changeItem.getNewValue();
 
-							Object targetObject = convertContentToTargetType(configInfo, parameterTypes[0]);
-							ReflectionUtils.invokeMethod(method, getTarget(), targetObject);
+							if (org.springframework.util.StringUtils.hasText(newConfig)) {
+								if (invokePrimitiveMethod(method, getTarget(), newConfig)) {
+									return;
+								}
+
+								Object targetObject = convertContentToTargetType(newConfig, parameterTypes[0]);
+								ReflectionUtils.invokeMethod(method, getTarget(), targetObject);
+							}
 						}
 						catch (Exception e) {
 							throw new RuntimeException(e);
 						}
-
 					}
 
-				}
+					@Override
+					public String toString() {
+						return String.format("[spring cloud alibaba nacos config key listener , key %s , target %s ] ", key, bean + "#" + methodSignature(method));
+					}
+				};
+			}
+			else {
+				listener = new NacosConfigRefreshableListener(bean) {
 
-				@Override
-				public String toString() {
-					return String.format("sca nacos config listener on bean method %s", bean + "#" + method.getName());
-				}
-			};
-			nacosConfigManager.getConfigService().addListener(dataId, group, nacosConfigRefreshableListener);
-			targetListenerMap.put(refreshTargetKey, nacosConfigRefreshableListener);
-			if (annotation.initNotify()) {
+					@Override
+					public void receiveConfigInfo(String configInfo) {
+						if (org.springframework.util.StringUtils.hasText(configInfo)) {
+							try {
+								if (invokePrimitiveMethod(method, getTarget(), configInfo)) {
+									return;
+								}
+								Object targetObject = convertContentToTargetType(configInfo, parameterTypes[0]);
+								ReflectionUtils.invokeMethod(method, getTarget(), targetObject);
+							}
+							catch (Exception e) {
+								throw new RuntimeException(e);
+							}
+
+						}
+					}
+
+					@Override
+					public String toString() {
+						return String.format("[spring cloud alibaba nacos config  listener ,  target %s ] ", bean + "#" + methodSignature(method));
+					}
+				};
+			}
+
+			nacosConfigManager.getConfigService().addListener(dataId, group, listener);
+			targetListenerMap.put(refreshTargetKey, listener);
+			if (annotation.initNotify() && org.springframework.util.StringUtils.hasText(configInfo)) {
 				try {
 					log.info("[Nacos Config] init notify listener of {}  on {} start...", refreshTargetKey,
 							bean);
-					nacosConfigRefreshableListener.receiveConfigInfo(getGroupKeyContent(dataId, group));
+					listener.receiveConfigInfo(configInfo);
 					log.info("[Nacos Config] init notify listener of {}  on {} finished ", refreshTargetKey,
 							bean);
 				}
@@ -372,10 +344,12 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 			}
 
 			//for other type.
-			Object targetObject = convertContentToTargetType(config, field.getGenericType());
+			if (org.springframework.util.StringUtils.hasText(config)) {
+				Object targetObject = convertContentToTargetType(config, field.getGenericType());
+				//yaml and json to object
+				ReflectionUtils.setField(field, bean, targetObject);
+			}
 
-			//yaml and json to object
-			ReflectionUtils.setField(field, bean, targetObject);
 			String refreshTargetKey = beanName + "#filed#" + field.getName();
 			TargetRefreshable currentTarget = targetListenerMap.get(refreshTargetKey);
 			if (currentTarget != null) {
@@ -447,7 +421,16 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 	}
 
 	private boolean handPrimitiveFiled(Field field, String dataId, String group, String config, String key, String defaultValue, String beanName, Object bean) throws Exception {
-		if (field.getType().isPrimitive() && setPrimitiveFiled(field, bean, config)) {
+		if (field.getType().isPrimitive()) {
+
+			if (org.springframework.util.StringUtils.hasText(config)) {
+				try {
+					setPrimitiveFiled(field, bean, config);
+				}
+				catch (Throwable throwable) {
+					throw new RuntimeException(throwable);
+				}
+			}
 
 			String refreshTargetKey = beanName + "#filed#" + field.getName();
 			TargetRefreshable currentTarget = targetListenerMap.get(refreshTargetKey);
@@ -557,7 +540,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 		return true;
 	}
 
-	private boolean invokePrimitiveFiled(Method method, Object bean, String value) throws Exception {
+	private boolean invokePrimitiveMethod(Method method, Object bean, String value) throws Exception {
 		Class<?> parameterType = method.getParameterTypes()[0];
 		if (parameterType == int.class) {
 			ReflectionUtils.invokeMethod(method, bean, Integer.parseInt(value));
@@ -617,11 +600,6 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 			ReflectionUtils.makeAccessible(method);
 			handleMethodNacosConfigListener(configAnnotation, beanName, bean, method);
 			return;
-		}
-		NacosConfigKeyListener keyAnnotation = AnnotationUtils.getAnnotation(method, NacosConfigKeyListener.class);
-		if (keyAnnotation != null) {
-			ReflectionUtils.makeAccessible(method);
-			handleMethodNacosConfigKeyListener(keyAnnotation, beanName, bean, method);
 		}
 
 	}
