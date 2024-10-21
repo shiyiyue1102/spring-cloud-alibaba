@@ -44,9 +44,9 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @SpringBootTest(classes = NacosFileExtensionTest.TestConfig.class, webEnvironment = NONE, properties = {
 		"spring.application.name=test-name",
-		"spring.cloud.nacos.config.server-addr=127.0.0.1:8848",
-		"spring.cloud.nacos.config.file-extension=yaml",
-		"spring.cloud.bootstrap.enabled=true" })
+		"spring.nacos.config.server-addr=127.0.0.1:8848",
+		"spring.nacos.config.file-extension=yaml",
+		"spring.bootstrap.enabled=true" })
 public class NacosFileExtensionTest {
 
 	static {

@@ -19,7 +19,6 @@ package com.alibaba.cloud.nacos;
 import java.util.Map;
 
 import com.alibaba.cloud.nacos.NacosConfigProperties.Config;
-import com.alibaba.cloud.nacos.client.NacosPropertySourceLocator;
 import com.alibaba.cloud.nacos.endpoint.NacosConfigEndpoint;
 import com.alibaba.cloud.nacos.endpoint.NacosConfigEndpointAutoConfiguration;
 import com.alibaba.cloud.nacos.refresh.NacosRefreshHistory;
@@ -50,23 +49,18 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @SpringBootTest(classes = NacosConfigurationNewTest.TestConfig.class, webEnvironment = NONE, properties = {
 		"spring.application.name=myTestService1", "spring.profiles.active=dev,test",
-		"spring.cloud.nacos.config.server-addr=127.0.0.1:8848",
-		"spring.cloud.nacos.config.namespace=test-namespace",
-		"spring.cloud.nacos.config.encode=utf-8",
-		"spring.cloud.nacos.config.timeout=1000",
-		"spring.cloud.nacos.config.group=test-group",
-		"spring.cloud.nacos.config.name=test-name",
-		"spring.cloud.nacos.config.cluster-name=test-cluster",
-		"spring.cloud.nacos.config.file-extension=properties",
-		"spring.cloud.nacos.config.contextPath=test-contextpath",
-		"spring.cloud.nacos.config.extension-configs[0].data-id=ext-config-common01.properties",
-		"spring.cloud.nacos.config.extension-configs[1].data-id=ext-config-common02.properties",
-		"spring.cloud.nacos.config.extension-configs[1].group=GLOBAL_GROUP",
-		"spring.cloud.nacos.config.shared-configs[0]=common1.properties",
-		"spring.cloud.nacos.config.shared-configs[1]=common2.properties",
-		"spring.cloud.nacos.config.accessKey=test-accessKey",
-		"spring.cloud.nacos.config.secretKey=test-secretKey",
-		"spring.cloud.bootstrap.enabled=true" })
+		"spring.nacos.config.server-addr=127.0.0.1:8848",
+		"spring.nacos.config.namespace=test-namespace",
+		"spring.nacos.config.encode=utf-8",
+		"spring.nacos.config.timeout=1000",
+		"spring.nacos.config.group=test-group",
+		"spring.nacos.config.name=test-name",
+		"spring.nacos.config.cluster-name=test-cluster",
+		"spring.nacos.config.file-extension=properties",
+		"spring.nacos.config.contextPath=test-contextpath",
+		"spring.nacos.config.accessKey=test-accessKey",
+		"spring.nacos.config.secretKey=test-secretKey",
+		"spring.bootstrap.enabled=true" })
 public class NacosConfigurationNewTest {
 
 	static {
@@ -128,9 +122,6 @@ public class NacosConfigurationNewTest {
 	private Environment environment;
 
 	@Autowired
-	private NacosPropertySourceLocator locator;
-
-	@Autowired
 	private NacosConfigProperties properties;
 
 	@Autowired
@@ -139,7 +130,6 @@ public class NacosConfigurationNewTest {
 	@Test
 	public void contextLoads() throws Exception {
 
-		assertThat(locator).isNotNull();
 		assertThat(properties).isNotNull();
 
 		checkoutNacosConfigServerAddr();

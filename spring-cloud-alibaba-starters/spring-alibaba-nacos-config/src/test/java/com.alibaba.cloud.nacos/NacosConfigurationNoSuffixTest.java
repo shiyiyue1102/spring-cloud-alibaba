@@ -18,7 +18,6 @@ package com.alibaba.cloud.nacos;
 
 import java.util.Map;
 
-import com.alibaba.cloud.nacos.client.NacosPropertySourceLocator;
 import com.alibaba.cloud.nacos.endpoint.NacosConfigEndpoint;
 import com.alibaba.cloud.nacos.endpoint.NacosConfigEndpointAutoConfiguration;
 import com.alibaba.cloud.nacos.refresh.NacosRefreshHistory;
@@ -57,9 +56,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 		"spring.cloud.nacos.config.name=test-no-suffix-name",
 		"spring.cloud.nacos.config.cluster-name=test-cluster",
 		"spring.cloud.nacos.config.contextPath=test-contextpath",
-		"spring.cloud.nacos.config.ext-config[0].data-id=ext-json-test.json",
-		"spring.cloud.nacos.config.ext-config[1].data-id=ext-common02.properties",
-		"spring.cloud.nacos.config.ext-config[1].group=GLOBAL_GROUP",
 		"spring.cloud.nacos.config.shared-dataids=shared-data1.properties,shared-data2.xml",
 		"spring.cloud.nacos.config.accessKey=test-accessKey",
 		"spring.cloud.nacos.config.secretKey=test-secretKey",
@@ -154,9 +150,6 @@ public class NacosConfigurationNoSuffixTest {
 	}
 
 	@Autowired
-	private NacosPropertySourceLocator locator;
-
-	@Autowired
 	private NacosConfigProperties properties;
 
 	@Autowired
@@ -168,7 +161,6 @@ public class NacosConfigurationNoSuffixTest {
 	@Test
 	public void contextLoads() throws Exception {
 
-		assertThat(locator).isNotNull();
 		assertThat(properties).isNotNull();
 
 		checkoutNacosConfigServerAddr();

@@ -58,9 +58,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 		"spring.cloud.nacos.config.cluster-name=test-cluster",
 		"spring.cloud.nacos.config.file-extension=xml",
 		"spring.cloud.nacos.config.contextPath=test-contextpath",
-		"spring.cloud.nacos.config.ext-config[0].data-id=ext-json-test.json",
-		"spring.cloud.nacos.config.ext-config[1].data-id=ext-common02.properties",
-		"spring.cloud.nacos.config.ext-config[1].group=GLOBAL_GROUP",
 		"spring.cloud.nacos.config.shared-dataids=shared-data1.properties,shared-data.json",
 		"spring.cloud.nacos.config.accessKey=test-accessKey",
 		"spring.cloud.nacos.config.secretKey=test-secretKey",
@@ -173,9 +170,6 @@ public class NacosConfigurationXmlJsonTest {
 	}
 
 	@Autowired
-	private NacosPropertySourceLocator locator;
-
-	@Autowired
 	private NacosConfigProperties properties;
 
 	@Autowired
@@ -187,7 +181,6 @@ public class NacosConfigurationXmlJsonTest {
 	@Test
 	public void contextLoads() throws Exception {
 
-		assertThat(locator).isNotNull();
 		assertThat(properties).isNotNull();
 
 		checkoutNacosConfigServerAddr();
