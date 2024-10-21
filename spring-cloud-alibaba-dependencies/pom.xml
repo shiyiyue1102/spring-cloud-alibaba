@@ -18,7 +18,7 @@
     <description>Spring Cloud Alibaba Dependencies</description>
 
     <properties>
-        <revision>2023.0.1.2</revision>
+        <revision>2023.0.1.2-SNAPSHOT</revision>
         <sentinel.version>1.8.8</sentinel.version>
         <nacos.client.version>2.4.2</nacos.client.version>
         <seata.version>2.1.0</seata.version>
@@ -240,6 +240,11 @@
                 <artifactId>spring-cloud-starter-alibaba-ai</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-alibaba-nacos-config</artifactId>
+                <version>${revision}</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.alibaba.cloud</groupId>
@@ -383,5 +388,14 @@
         </profile>
 
     </profiles>
-
+    <distributionManagement>
+        <repository>
+            <id>releases</id>
+            <url>http://mvnrepo.alibaba-inc.com/mvn/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <url>http://mvnrepo.alibaba-inc.com/mvn/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>

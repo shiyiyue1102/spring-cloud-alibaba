@@ -14,28 +14,32 @@
  * limitations under the License.
  */
 
-package com.alibaba.cloud.nacos.refresh.condition;
+package com.alibaba.cloud.nacos;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import com.alibaba.cloud.nacos.refresh.RefreshBehavior;
-
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Configuration;
 
 /**
- * Condition on {@link RefreshBehavior} is <strong>NOT</strong> default.
- *
+ * @author xiaojing
  * @author freeman
- * @since 2021.0.1.1
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE, ElementType.METHOD })
-@Documented
-@Conditional(com.alibaba.cloud.nacos.refresh.condition.NonDefaultBehaviorCondition.class)
-public @interface ConditionalOnNonDefaultBehavior {
+@Configuration(proxyBeanMethods = false)
+@Conditional(NacosConfigEnabledCondition.class)
+public class NacosConfigBootstrapConfiguration {
+
+	@Bean
+	@ConditionalOnMissingBean
+	public NacosConfigProperties nacosConfigProperties() {
+		return new NacosConfigProperties();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public NacosConfigManager nacosConfigManager(
+			NacosConfigProperties nacosConfigProperties) {
+		return new NacosConfigManager(nacosConfigProperties);
+	}
 
 }
