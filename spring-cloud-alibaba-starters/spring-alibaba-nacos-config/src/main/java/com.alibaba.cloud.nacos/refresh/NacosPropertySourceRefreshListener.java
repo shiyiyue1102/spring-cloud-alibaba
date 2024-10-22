@@ -109,17 +109,11 @@ public class NacosPropertySourceRefreshListener implements BeanPostProcessor, Sm
 					NacosPropertySource newProperSource = nacosPropertySourceBuilder.build(event.getDataId(), event.getGroup(), "properties", ((NacosPropertySource) prevpropertySource).isRefreshable());
 					target.replace(sourceName, newProperSource);
 					log.info("Replace Nacos Property Source : " + sourceName);
-					Set<String> changedKeys = getChangedKeys((NacosPropertySource) prevpropertySource, newProperSource);
-					//rebind beans.
+
 				}
 
 			}
 
 		}
 	}
-
-	Set<String> getChangedKeys(NacosPropertySource prevPropertySource, NacosPropertySource newPropertySource) {
-		return null;
-	}
-
 }

@@ -32,7 +32,7 @@ import org.springframework.stereotype.Component;
  * @author shiyiyue
  * @since 2024.10.17
  */
-@Component
+@Component("nacosConfigSpringCloudRefreshEventListener")
 public class NacosConfigRefreshEventListener implements SmartApplicationListener, ApplicationContextAware {
 
 	private final static Logger log = LoggerFactory.getLogger(NacosConfigRefreshEventListener.class);
