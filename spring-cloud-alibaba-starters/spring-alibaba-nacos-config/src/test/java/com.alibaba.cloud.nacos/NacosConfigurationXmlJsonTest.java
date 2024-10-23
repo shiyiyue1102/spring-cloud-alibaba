@@ -18,7 +18,6 @@ package com.alibaba.cloud.nacos;
 
 import java.util.Map;
 
-import com.alibaba.cloud.nacos.client.NacosPropertySourceLocator;
 import com.alibaba.cloud.nacos.endpoint.NacosConfigEndpoint;
 import com.alibaba.cloud.nacos.endpoint.NacosConfigEndpointAutoConfiguration;
 import com.alibaba.cloud.nacos.refresh.NacosRefreshHistory;

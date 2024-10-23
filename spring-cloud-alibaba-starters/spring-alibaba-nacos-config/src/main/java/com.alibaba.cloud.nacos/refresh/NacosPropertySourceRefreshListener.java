@@ -18,7 +18,6 @@ package com.alibaba.cloud.nacos.refresh;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.alibaba.cloud.nacos.NacosConfigManager;

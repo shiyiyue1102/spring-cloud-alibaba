@@ -17,6 +17,7 @@
 package com.alibaba.cloud.nacos;
 
 import com.alibaba.cloud.nacos.client.NacosPropertySourceLocator;
+import com.alibaba.cloud.nacos.configdata.NacosConfigRefreshEventListener;
 import com.alibaba.cloud.nacos.refresh.SmartConfigurationPropertiesRebinder;
 import com.alibaba.cloud.nacos.refresh.condition.ConditionalOnNonDefaultBehavior;
 
@@ -51,6 +52,9 @@ public class NacosConfigSpringCloudAutoConfiguration {
 		return new NacosPropertySourceLocator(nacosConfigManager);
 	}
 
-
+	@Bean(name = "nacosConfigSpringCloudRefreshEventListener")
+	public NacosConfigRefreshEventListener nacosConfigRefreshEventListener() {
+		return new NacosConfigRefreshEventListener();
+	}
 
 }

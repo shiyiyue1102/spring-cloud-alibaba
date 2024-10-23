@@ -25,14 +25,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.SmartApplicationListener;
-import org.springframework.stereotype.Component;
 
 /**
  *
  * @author shiyiyue
  * @since 2024.10.17
  */
-@Component("nacosConfigSpringCloudRefreshEventListener")
 public class NacosConfigRefreshEventListener implements SmartApplicationListener, ApplicationContextAware {
 
 	private final static Logger log = LoggerFactory.getLogger(NacosConfigRefreshEventListener.class);
