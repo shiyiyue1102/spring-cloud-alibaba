@@ -34,7 +34,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * @author freeman
  */
 @SpringBootTest(classes = TestConfig.class, webEnvironment = NONE, properties = {
-		"spring.cloud.nacos.server-addr=123.123.123.123:8848",
+		"spring.nacos.server-addr=123.123.123.123:8848",
 		"spring.cloud.bootstrap.enabled=true" })
 public class NacosConfigPropertiesServerAddressTopLevelTests {
 

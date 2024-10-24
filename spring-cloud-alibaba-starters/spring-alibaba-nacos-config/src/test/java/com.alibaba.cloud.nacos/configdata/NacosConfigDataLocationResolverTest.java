@@ -135,7 +135,7 @@ public class NacosConfigDataLocationResolverTest {
 		assertThat(resources.get(0).getConfig().getDataId()).isEqualTo("app");
 		assertThat(resources.get(0).getConfig().getSuffix()).isEqualTo("properties");
 
-		environment.setProperty("spring.cloud.nacos.config.file-extension", "yml");
+		environment.setProperty("spring.nacos.config.file-extension", "yml");
 		locationUri = "nacos:app";
 		resources = testUri(locationUri);
 		Assertions.assertThat(resources).hasSize(1);
@@ -151,8 +151,8 @@ public class NacosConfigDataLocationResolverTest {
 
 	@Test
 	void testUrisInLocationShouldOverridesProperty() {
-		environment.setProperty("spring.cloud.nacos.config.group", "default");
-		environment.setProperty("spring.cloud.nacos.config.refreshEnabled", "true");
+		environment.setProperty("spring.nacos.config.group", "default");
+		environment.setProperty("spring.nacos.config.refreshEnabled", "true");
 		String locationUri = "nacos:test.yml?group=not_default&refreshEnabled=false";
 		List<NacosConfigDataResource> resources = testUri(locationUri);
 		Assertions.assertThat(resources).hasSize(1);
@@ -165,9 +165,9 @@ public class NacosConfigDataLocationResolverTest {
 
 	@Test
 	void testSetCommonPropertiesIsOK() {
-		environment.setProperty("spring.cloud.nacos.username", "root");
-		environment.setProperty("spring.cloud.nacos.password", "root");
-		environment.setProperty("spring.cloud.nacos.server-addr", "127.0.0.1:8888");
+		environment.setProperty("spring.nacos.username", "root");
+		environment.setProperty("spring.nacos.password", "root");
+		environment.setProperty("spring.nacos.server-addr", "127.0.0.1:8888");
 		String locationUri = "nacos:test.yml";
 		List<NacosConfigDataResource> resources = testUri(locationUri);
 
@@ -180,11 +180,11 @@ public class NacosConfigDataLocationResolverTest {
 
 	@Test
 	void testCommonPropertiesHasLowerPriority() {
-		environment.setProperty("spring.cloud.nacos.username", "root");
-		environment.setProperty("spring.cloud.nacos.password", "root");
-		environment.setProperty("spring.cloud.nacos.config.password", "not_root");
-		environment.setProperty("spring.cloud.nacos.server-addr", "127.0.0.1:8888");
-		environment.setProperty("spring.cloud.nacos.config.server-addr",
+		environment.setProperty("spring.nacos.username", "root");
+		environment.setProperty("spring.nacos.password", "root");
+		environment.setProperty("spring.nacos.config.password", "not_root");
+		environment.setProperty("spring.nacos.server-addr", "127.0.0.1:8888");
+		environment.setProperty("spring.nacos.config.server-addr",
 				"127.0.0.1:9999");
 		String locationUri = "nacos:test.yml";
 		List<NacosConfigDataResource> resources = testUri(locationUri);

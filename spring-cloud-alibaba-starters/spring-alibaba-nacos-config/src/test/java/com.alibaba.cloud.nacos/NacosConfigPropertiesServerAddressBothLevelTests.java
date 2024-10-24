@@ -32,8 +32,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author freeman
  */
 @SpringBootTest(classes = NacosConfigPropertiesServerAddressBothLevelTests.TestConfig.class, properties = {
-		"spring.cloud.nacos.config.server-addr=321.321.321.321:8848",
-		"spring.cloud.nacos.server-addr=123.123.123.123:8848",
+		"spring.nacos.config.server-addr=321.321.321.321:8848",
+		"spring.nacos.server-addr=123.123.123.123:8848",
 		"spring.cloud.bootstrap.enabled=true"
 })
 public class NacosConfigPropertiesServerAddressBothLevelTests {

@@ -48,18 +48,18 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @SpringBootTest(classes = NacosConfigurationXmlJsonTest.TestConfig.class, webEnvironment = NONE, properties = {
 		"spring.application.name=xmlApp", "spring.profiles.active=dev",
-		"spring.cloud.nacos.config.server-addr=127.0.0.1:8848",
-		"spring.cloud.nacos.config.namespace=test-namespace",
-		"spring.cloud.nacos.config.encode=utf-8",
-		"spring.cloud.nacos.config.timeout=1000",
-		"spring.cloud.nacos.config.group=test-group",
-		"spring.cloud.nacos.config.name=test-name",
-		"spring.cloud.nacos.config.cluster-name=test-cluster",
-		"spring.cloud.nacos.config.file-extension=xml",
-		"spring.cloud.nacos.config.contextPath=test-contextpath",
-		"spring.cloud.nacos.config.shared-dataids=shared-data1.properties,shared-data.json",
-		"spring.cloud.nacos.config.accessKey=test-accessKey",
-		"spring.cloud.nacos.config.secretKey=test-secretKey",
+		"spring.nacos.config.server-addr=127.0.0.1:8848",
+		"spring.nacos.config.namespace=test-namespace",
+		"spring.nacos.config.encode=utf-8",
+		"spring.nacos.config.timeout=1000",
+		"spring.nacos.config.group=test-group",
+		"spring.nacos.config.name=test-name",
+		"spring.nacos.config.cluster-name=test-cluster",
+		"spring.nacos.config.file-extension=xml",
+		"spring.nacos.config.contextPath=test-contextpath",
+		"spring.nacos.config.shared-dataids=shared-data1.properties,shared-data.json",
+		"spring.nacos.config.accessKey=test-accessKey",
+		"spring.nacos.config.secretKey=test-secretKey",
 		"spring.cloud.bootstrap.enabled=true" })
 public class NacosConfigurationXmlJsonTest {
 

@@ -45,8 +45,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest(classes = NacosConfigEndpointTests.TestConfig.class, webEnvironment = SpringBootTest.WebEnvironment.NONE, properties = {
 		"spring.application.name=test-name",
-		"spring.cloud.nacos.config.server-addr=127.0.0.1:8848",
-		"spring.cloud.nacos.config.file-extension=properties",
+		"spring.nacos.config.server-addr=127.0.0.1:8848",
+		"spring.nacos.config.file-extension=properties",
 		"spring.cloud.bootstrap.enabled=true" })
 public class NacosConfigEndpointTests {
 
