@@ -515,7 +515,7 @@ public class NacosConfigProperties {
 	@Deprecated
 	public ConfigService configServiceInstance() {
 		// The following code will be migrated
-		return NacosConfigManager.createConfigService(this);
+		return NacosConfigManager.getInstance(this).getConfigService();
 	}
 
 	/**

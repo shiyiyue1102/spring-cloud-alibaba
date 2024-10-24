@@ -32,7 +32,9 @@ public class NacosConfigManager {
 
 	private static final Logger log = LoggerFactory.getLogger(NacosConfigManager.class);
 
-	private static ConfigService service = null;
+	private ConfigService service = null;
+
+	private static NacosConfigManager INSTANCE;
 
 	private NacosConfigProperties nacosConfigProperties;
 
@@ -40,25 +42,38 @@ public class NacosConfigManager {
 		this.nacosConfigProperties = nacosConfigProperties;
 	}
 
+	public static NacosConfigManager getInstance() {
+		return INSTANCE;
+	}
+
+	public static NacosConfigManager getInstance(NacosConfigProperties properties) {
+		if (INSTANCE != null) {
+			return INSTANCE;
+		}
+		synchronized (NacosConfigManager.class) {
+			if (INSTANCE == null) {
+				INSTANCE = new NacosConfigManager(properties);
+				INSTANCE.createConfigService(properties);
+			}
+		}
+		return INSTANCE;
+	}
+
 	/**
 	 * Compatible with old design,It will be perfected in the future.
 	 */
-	static ConfigService createConfigService(
+	private ConfigService createConfigService(
 			NacosConfigProperties nacosConfigProperties) {
-		if (Objects.isNull(service)) {
-			synchronized (NacosConfigManager.class) {
-				try {
-					if (Objects.isNull(service)) {
-						service = NacosFactory.createConfigService(
-								nacosConfigProperties.assembleConfigServiceProperties());
-					}
-				}
-				catch (NacosException e) {
-					log.error(e.getMessage());
-					throw new NacosConnectionFailureException(
-							nacosConfigProperties.getServerAddr(), e.getMessage(), e);
-				}
+		try {
+			if (Objects.isNull(service)) {
+				service = NacosFactory.createConfigService(
+						nacosConfigProperties.assembleConfigServiceProperties());
 			}
+		}
+		catch (NacosException e) {
+			log.error(e.getMessage());
+			throw new NacosConnectionFailureException(
+					nacosConfigProperties.getServerAddr(), e.getMessage(), e);
 		}
 		return service;
 	}
