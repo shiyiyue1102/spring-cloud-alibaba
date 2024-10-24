@@ -32,7 +32,7 @@ public class NacosConfigManager {
 
 	private static final Logger log = LoggerFactory.getLogger(NacosConfigManager.class);
 
-	private ConfigService service = null;
+	private static ConfigService service;
 
 	private static NacosConfigManager INSTANCE;
 
