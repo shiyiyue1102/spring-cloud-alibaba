@@ -43,11 +43,7 @@ public class NacosConfigAutoConfiguration {
 				NacosConfigProperties.class).length > 0) {
 			return BeanFactoryUtils.beanOfTypeIncludingAncestors(context.getParent(), NacosConfigProperties.class);
 		}
-		if (NacosConfigManager.getInstance() == null) {
-			return new NacosConfigProperties();
-		} else {
-			return NacosConfigManager.getInstance().getNacosConfigProperties();
-		}
+		return NacosConfigManager.getInstance().getNacosConfigProperties();
 	}
 
 	@Bean
