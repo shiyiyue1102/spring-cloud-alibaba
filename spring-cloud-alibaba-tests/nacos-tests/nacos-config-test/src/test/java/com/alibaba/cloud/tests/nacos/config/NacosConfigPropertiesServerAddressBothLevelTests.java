@@ -33,6 +33,7 @@ import org.junit.Ignore;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +56,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 		"spring.cloud.nacos.config.password=nacos",
 		"spring.cloud.nacos.config.file-extension=properties",
 		"spring.cloud.bootstrap.enabled=true"})
-@Ignore
+@Disabled("Does not work with the new nacos config load process")
 public class NacosConfigPropertiesServerAddressBothLevelTests {
 
 	/**

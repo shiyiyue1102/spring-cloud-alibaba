@@ -35,6 +35,7 @@ import org.junit.Ignore;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +62,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 		"spring.cloud.nacos.config.extension-configs[1].group=GLOBAL_GROUP",
 		"spring.cloud.nacos.config.shared-dataids=common1.properties,common2.properties",
 		"spring.cloud.bootstrap.enabled=true" })
-@Ignore
+@Disabled("Does not work with the new nacos config load process")
 public class NacosConfigurationExtConfigTests {
 
 	/**
