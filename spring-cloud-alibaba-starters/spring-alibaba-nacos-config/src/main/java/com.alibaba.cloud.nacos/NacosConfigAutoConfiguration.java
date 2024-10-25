@@ -45,7 +45,8 @@ public class NacosConfigAutoConfiguration {
 		}
 		if (NacosConfigManager.getInstance() == null) { // this should never happen except for some unit tests
 			return new NacosConfigProperties();
-		} else {
+		}
+		else {
 			return NacosConfigManager.getInstance().getNacosConfigProperties();
 		}
 	}
