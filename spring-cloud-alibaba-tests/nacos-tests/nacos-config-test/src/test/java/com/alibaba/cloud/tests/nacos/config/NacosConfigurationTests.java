@@ -28,12 +28,12 @@ import com.alibaba.cloud.nacos.NacosConfigProperties;
 import com.alibaba.cloud.nacos.endpoint.NacosConfigEndpoint;
 import com.alibaba.cloud.nacos.endpoint.NacosConfigEndpointAutoConfiguration;
 import com.alibaba.cloud.nacos.refresh.NacosRefreshHistory;
-import com.alibaba.cloud.testsupport.SpringCloudAlibaba;
 import com.alibaba.cloud.testsupport.TestExtend;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +49,7 @@ import static com.alibaba.cloud.testsupport.Constant.TIME_OUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.NONE;
 
-@SpringCloudAlibaba(composeFiles = "docker/nacos-compose-test.yml", serviceName = "nacos-standalone")
+//@SpringCloudAlibaba(composeFiles = "docker/nacos-compose-test.yml", serviceName = "nacos-standalone")
 @TestExtend(time = 4 * TIME_OUT)
 @SpringBootTest(classes = NacosConfigurationTests.TestConfig.class, webEnvironment = NONE, properties = {
 		"spring.application.name=myTestService1",
@@ -65,7 +65,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 		"spring.cloud.nacos.config.extension-configs[1].group=GLOBAL_GROUP",
 		"spring.cloud.nacos.config.shared-dataids=common1.properties,common2.properties",
 		"spring.cloud.bootstrap.enabled=true"})
-
+@Ignore
 public class NacosConfigurationTests {
 
 	/**

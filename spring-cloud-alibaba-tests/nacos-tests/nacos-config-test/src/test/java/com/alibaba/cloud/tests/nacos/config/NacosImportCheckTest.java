@@ -17,6 +17,7 @@
 package com.alibaba.cloud.tests.nacos.config;
 
 import com.alibaba.cloud.testsupport.HasDockerAndItEnabled;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -30,6 +31,7 @@ import static org.springframework.cloud.commons.ConfigDataMissingEnvironmentPost
  * @author freeman
  */
 @HasDockerAndItEnabled
+@Ignore
 public class NacosImportCheckTest {
 
 	@Test

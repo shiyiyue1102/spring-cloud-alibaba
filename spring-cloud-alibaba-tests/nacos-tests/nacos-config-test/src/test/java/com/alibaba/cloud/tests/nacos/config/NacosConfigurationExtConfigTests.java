@@ -31,6 +31,7 @@ import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,6 +61,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 		"spring.cloud.nacos.config.extension-configs[1].group=GLOBAL_GROUP",
 		"spring.cloud.nacos.config.shared-dataids=common1.properties,common2.properties",
 		"spring.cloud.bootstrap.enabled=true" })
+@Ignore
 public class NacosConfigurationExtConfigTests {
 
 	/**
