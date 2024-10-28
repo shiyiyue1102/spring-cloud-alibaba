@@ -33,7 +33,6 @@ import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -94,6 +93,21 @@ public class NacosConfigurationTests {
 
 	}
 
+	public static List<NacosConfigProperties.Config> mockExtConfigs() {
+		List<NacosConfigProperties.Config> mockConfig = new ArrayList<>();
+		NacosConfigProperties.Config config1 = new NacosConfigProperties.Config();
+		config1.setDataId("ext-config-common01.properties");
+		config1.setGroup("DEFAULT_GROUP");
+		config1.setRefresh(false);
+		NacosConfigProperties.Config config2 = new NacosConfigProperties.Config();
+		config2.setDataId("ext-config-common02.properties");
+		config2.setGroup("GLOBAL_GROUP");
+		config2.setRefresh(false);
+		mockConfig.add(config1);
+		mockConfig.add(config2);
+		return mockConfig;
+	}
+
 	@BeforeEach
 	public void prepare() throws NacosException {
 		Properties nacosSettings = new Properties();
@@ -150,21 +164,6 @@ public class NacosConfigurationTests {
 		Map<String, Object> map = nacosConfigEndpoint.invoke();
 		assertThat(nacosConfigProperties).isEqualTo(map.get("NacosConfigProperties"));
 		assertThat(refreshHistory.getRecords()).isEqualTo(map.get("RefreshHistory"));
-	}
-
-	public static List<NacosConfigProperties.Config> mockExtConfigs() {
-		List<NacosConfigProperties.Config> mockConfig = new ArrayList<>();
-		NacosConfigProperties.Config config1 = new NacosConfigProperties.Config();
-		config1.setDataId("ext-config-common01.properties");
-		config1.setGroup("DEFAULT_GROUP");
-		config1.setRefresh(false);
-		NacosConfigProperties.Config config2 = new NacosConfigProperties.Config();
-		config2.setDataId("ext-config-common02.properties");
-		config2.setGroup("GLOBAL_GROUP");
-		config2.setRefresh(false);
-		mockConfig.add(config1);
-		mockConfig.add(config2);
-		return mockConfig;
 	}
 
 	@Configuration

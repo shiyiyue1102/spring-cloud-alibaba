@@ -17,7 +17,6 @@
 package com.alibaba.cloud.tests.nacos.config;
 
 import com.alibaba.cloud.testsupport.HasDockerAndItEnabled;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
