@@ -39,11 +39,17 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.PriorityOrdered;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.core.annotation.MergedAnnotations;
+import org.springframework.core.type.MethodMetadata;
 import org.springframework.util.ReflectionUtils;
 
 public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrdered, ApplicationContextAware {
@@ -699,6 +705,27 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 			ReflectionUtils.makeAccessible(method);
 			handleMethodNacosConfigListener(configAnnotation, beanName, bean, method);
 			return;
+		}
+
+		BeanDefinition beanDefinition = ((AnnotationConfigServletWebServerApplicationContext) applicationContext).getBeanFactory()
+				.getBeanDefinition(beanName);
+		if (beanDefinition instanceof AnnotatedBeanDefinition) {
+			MethodMetadata factoryMethodMetadata = (((AnnotatedBeanDefinition) beanDefinition).getFactoryMethodMetadata());
+			if (factoryMethodMetadata != null) {
+
+				MergedAnnotations annotations = factoryMethodMetadata.getAnnotations();
+				if (annotations != null && annotations.isPresent(NacosConfig.class)) {
+					MergedAnnotation<NacosConfig> nacosConfigMergedAnnotation = annotations.get(NacosConfig.class);
+					Map<String, Object> stringObjectMap = nacosConfigMergedAnnotation.asMap();
+					String dataId = (String) stringObjectMap.get("dataId");
+
+					String group = (String) stringObjectMap.get("group");
+					String key = (String) stringObjectMap.get("key");
+					String defaultValue = (String) stringObjectMap.get("defaultValue");
+					handleBeanNacosConfigAnnotation(dataId, group, key, beanName, bean, defaultValue);
+				}
+			}
+
 		}
 
 	}
