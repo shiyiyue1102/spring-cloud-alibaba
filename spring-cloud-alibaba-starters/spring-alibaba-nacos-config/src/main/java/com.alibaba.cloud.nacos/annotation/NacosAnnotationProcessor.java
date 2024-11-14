@@ -37,6 +37,7 @@ import com.alibaba.nacos.client.config.common.GroupKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
@@ -101,6 +102,12 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 		BeanPostProcessor.super.postProcessAfterInitialization(bean, beanName);
 		Class clazz = bean.getClass();
+		NacosConfig annotationBean = AnnotationUtils.findAnnotation(clazz, NacosConfig.class);
+		if (annotationBean != null) {
+			handleBeanNacosConfigAnnotation(annotationBean.dataId(), annotationBean.group(), annotationBean.key(), beanName, bean, annotationBean.defaultValue());
+			return bean;
+		}
+
 		for (Field field : getBeanFields(clazz)) {
 			handleFiledAnnotation(bean, beanName, field);
 		}
@@ -126,6 +133,93 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 		NacosConfig annotation = AnnotationUtils.getAnnotation(field, NacosConfig.class);
 		if (annotation != null) {
 			handleFiledNacosConfigAnnotation(annotation, beanName, bean, field);
+		}
+	}
+
+	private void handleBeanNacosConfigAnnotation(String dataId, String group, String key, String beanName, Object bean,
+			String defaultValue) {
+		try {
+			String config = getDestContent(getGroupKeyContent(dataId, group), key);
+			if (!org.springframework.util.StringUtils.hasText(config)) {
+				config = defaultValue;
+			}
+
+			//Init bean properties.
+			if (org.springframework.util.StringUtils.hasText(config)) {
+				Object targetObject = convertContentToTargetType(config, bean.getClass());
+				//yaml and json to object
+				BeanUtils.copyProperties(targetObject, bean);
+			}
+
+			String refreshTargetKey = beanName + "#instance#";
+			TargetRefreshable currentTarget = targetListenerMap.get(refreshTargetKey);
+			if (currentTarget != null) {
+				log.info("[Nacos Config] reset {} listener from  {} to {} ", refreshTargetKey,
+						currentTarget.getTarget(), bean);
+				targetListenerMap.get(refreshTargetKey).setTarget(bean);
+				return;
+			}
+
+			log.info("[Nacos Config] register {} listener on {} ", refreshTargetKey,
+					bean);
+			TargetRefreshable listener = null;
+			if (org.springframework.util.StringUtils.hasText(key)) {
+				listener = new NacosPropertiesKeyListener(bean, wrapArrayToSet(key)) {
+
+					@Override
+					public void configChanged(ConfigChangeEvent event) {
+						try {
+							ConfigChangeItem changeItem = event.getChangeItem(key);
+							String newConfig = changeItem == null ? null : changeItem.getNewValue();
+							if (!org.springframework.util.StringUtils.hasText(newConfig)) {
+								newConfig = defaultValue;
+							}
+							if (org.springframework.util.StringUtils.hasText(newConfig)) {
+								Object targetObject = convertContentToTargetType(newConfig, getTarget().getClass());
+								//yaml and json to object
+								BeanUtils.copyProperties(targetObject, getTarget());
+							}
+						}
+						catch (Exception e) {
+							throw new RuntimeException(e);
+						}
+					}
+
+					@Override
+					public String toString() {
+						return String.format("[spring cloud alibaba nacos config instance key listener , key %s , target %s ] ", key, bean);
+					}
+				};
+			}
+			else {
+				listener = new NacosConfigRefreshableListener(bean) {
+
+					@Override
+					public void receiveConfigInfo(String configInfo) {
+						if (!org.springframework.util.StringUtils.hasText(configInfo)) {
+							configInfo = defaultValue;
+						}
+						if (org.springframework.util.StringUtils.hasText(configInfo)) {
+							Object targetObject = convertContentToTargetType(configInfo, bean.getClass());
+							//yaml and json to object
+							BeanUtils.copyProperties(targetObject, getTarget());
+						}
+					}
+
+					@Override
+					public String toString() {
+						return String.format("[spring cloud alibaba nacos config instance  listener , key %s , target %s ] ", key, bean);
+					}
+				};
+			}
+
+			nacosConfigManager.getConfigService()
+					.addListener(dataId, group, listener);
+			targetListenerMap.put(refreshTargetKey, listener);
+
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 
