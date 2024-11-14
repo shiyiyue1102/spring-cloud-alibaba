@@ -42,9 +42,9 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.PriorityOrdered;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.MergedAnnotation;
@@ -707,8 +707,10 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 			return;
 		}
 
-		BeanDefinition beanDefinition = ((AnnotationConfigServletWebServerApplicationContext) applicationContext).getBeanFactory()
-				.getBeanDefinition(beanName);
+		if (!applicationContext.containsBeanDefinition(beanName)) {
+			return;
+		}
+		BeanDefinition beanDefinition = ((GenericApplicationContext) applicationContext).getBeanDefinition(beanName);
 		if (beanDefinition instanceof AnnotatedBeanDefinition) {
 			MethodMetadata factoryMethodMetadata = (((AnnotatedBeanDefinition) beanDefinition).getFactoryMethodMetadata());
 			if (factoryMethodMetadata != null) {
