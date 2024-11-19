@@ -16,6 +16,7 @@
 
 package com.alibaba.cloud.nacos.annotation;
 
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -38,6 +39,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -154,7 +157,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 			if (org.springframework.util.StringUtils.hasText(config)) {
 				Object targetObject = convertContentToTargetType(config, bean.getClass());
 				//yaml and json to object
-				BeanUtils.copyProperties(targetObject, bean);
+				BeanUtils.copyProperties(targetObject, bean, getNullPropertyNames(targetObject));
 			}
 
 			String refreshTargetKey = beanName + "#instance#";
@@ -183,7 +186,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 							if (org.springframework.util.StringUtils.hasText(newConfig)) {
 								Object targetObject = convertContentToTargetType(newConfig, getTarget().getClass());
 								//yaml and json to object
-								BeanUtils.copyProperties(targetObject, getTarget());
+								BeanUtils.copyProperties(targetObject, getTarget(), getNullPropertyNames(targetObject));
 							}
 						}
 						catch (Exception e) {
@@ -208,7 +211,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 						if (org.springframework.util.StringUtils.hasText(configInfo)) {
 							Object targetObject = convertContentToTargetType(configInfo, bean.getClass());
 							//yaml and json to object
-							BeanUtils.copyProperties(targetObject, getTarget());
+							BeanUtils.copyProperties(targetObject, getTarget(), getNullPropertyNames(targetObject));
 						}
 					}
 
@@ -737,4 +740,20 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 		this.applicationContext = applicationContext;
 		nacosConfigManager = this.applicationContext.getBean(NacosConfigManager.class);
 	}
+
+	private static String[] getNullPropertyNames(Object source) {
+		final BeanWrapper src = new BeanWrapperImpl(source);
+		PropertyDescriptor[] pds = src.getPropertyDescriptors();
+
+		Set<String> nullPropertyNames = new HashSet<>();
+		for (PropertyDescriptor pd : pds) {
+			String propertyName = pd.getName();
+			Object propertyValue = src.getPropertyValue(propertyName);
+			if (propertyValue == null) {
+				nullPropertyNames.add(propertyName);
+			}
+		}
+		return nullPropertyNames.toArray(new String[0]);
+	}
+
 }
