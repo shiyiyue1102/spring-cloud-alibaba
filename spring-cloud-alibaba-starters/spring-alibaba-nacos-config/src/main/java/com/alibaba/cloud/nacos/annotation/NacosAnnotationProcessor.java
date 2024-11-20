@@ -42,6 +42,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.NotReadablePropertyException;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -748,10 +749,17 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 		Set<String> nullPropertyNames = new HashSet<>();
 		for (PropertyDescriptor pd : pds) {
 			String propertyName = pd.getName();
-			Object propertyValue = src.getPropertyValue(propertyName);
-			if (propertyValue == null) {
+			try {
+				Object propertyValue = src.getPropertyValue(propertyName);
+				if (propertyValue == null) {
+					nullPropertyNames.add(propertyName);
+				}
+			}
+			catch (NotReadablePropertyException e) {
+				//ignore
 				nullPropertyNames.add(propertyName);
 			}
+
 		}
 		return nullPropertyNames.toArray(new String[0]);
 	}
