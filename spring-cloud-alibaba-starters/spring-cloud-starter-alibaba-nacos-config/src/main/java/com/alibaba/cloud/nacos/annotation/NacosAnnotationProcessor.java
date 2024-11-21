@@ -105,7 +105,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-		return BeanPostProcessor.super.postProcessBeforeInitialization(bean, beanName);
+		return bean;
 	}
 
 	@Override
