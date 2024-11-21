@@ -17,6 +17,7 @@
 package com.alibaba.cloud.nacos.annotation;
 
 import java.beans.PropertyDescriptor;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -54,6 +55,12 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.type.MethodMetadata;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.PriorityOrdered;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ReflectionUtils;
 
 public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrdered, ApplicationContextAware {
@@ -112,7 +119,6 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 		BeanPostProcessor.super.postProcessAfterInitialization(bean, beanName);
 		Class clazz = bean.getClass();
-
 		NacosConfig annotationBean = AnnotationUtils.findAnnotation(clazz, NacosConfig.class);
 		if (annotationBean != null) {
 			handleBeanNacosConfigAnnotation(annotationBean.dataId(), annotationBean.group(), annotationBean.key(), beanName, bean, annotationBean.defaultValue());
@@ -704,7 +710,6 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 			handleMethodNacosConfigListener(configAnnotation, beanName, bean, method);
 			return;
 		}
-
 		if (!applicationContext.containsBeanDefinition(beanName)) {
 			return;
 		}
@@ -724,6 +729,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 				}
 			}
 		}
+
 	}
 
 	@Override
@@ -751,4 +757,5 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 		}
 		return nullPropertyNames.toArray(new String[0]);
 	}
+
 }
