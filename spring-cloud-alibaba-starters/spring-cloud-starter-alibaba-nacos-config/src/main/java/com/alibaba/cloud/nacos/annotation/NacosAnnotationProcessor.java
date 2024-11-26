@@ -17,7 +17,6 @@
 package com.alibaba.cloud.nacos.annotation;
 
 import java.beans.PropertyDescriptor;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -55,12 +54,6 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.type.MethodMetadata;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.PriorityOrdered;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ReflectionUtils;
 
 public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrdered, ApplicationContextAware {
@@ -86,12 +79,12 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 		}
 		synchronized (this) {
 			if (!groupKeyCache.containsKey(GroupKey.getKey(dataId, group))) {
-				String content = nacosConfigManager.getConfigService().getConfig(dataId, group, 5000);
+				String content = getNacosConfigManager().getConfigService().getConfig(dataId, group, 5000);
 				groupKeyCache.put(GroupKey.getKey(dataId, group), new AtomicReference<>(content));
 
 				log.info("[Nacos Config] Listening config for annotation: dataId={}, group={}", dataId,
 						group);
-				nacosConfigManager.getConfigService().addListener(dataId, group, new AbstractListener() {
+				getNacosConfigManager().getConfigService().addListener(dataId, group, new AbstractListener() {
 					@Override
 					public void receiveConfigInfo(String s) {
 						groupKeyCache.get(GroupKey.getKey(dataId, group)).set(s);
@@ -225,7 +218,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 					}
 				};
 			}
-			nacosConfigManager.getConfigService()
+			getNacosConfigManager().getConfigService()
 					.addListener(dataId, group, listener);
 			targetListenerMap.put(refreshTargetKey, listener);
 		}
@@ -271,7 +264,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 				}
 			};
 			nacosPropertiesKeyListener.setLastContent(getGroupKeyContent(dataId, group));
-			nacosConfigManager.getConfigService().addListener(dataId, group,
+			getNacosConfigManager().getConfigService().addListener(dataId, group,
 					nacosPropertiesKeyListener);
 			targetListenerMap.put(refreshTargetKey, nacosPropertiesKeyListener);
 		}
@@ -383,7 +376,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 				};
 			}
 
-			nacosConfigManager.getConfigService().addListener(dataId, group, listener);
+			getNacosConfigManager().getConfigService().addListener(dataId, group, listener);
 			targetListenerMap.put(refreshTargetKey, listener);
 			if (annotation.initNotify() && org.springframework.util.StringUtils.hasText(configInfo)) {
 				try {
@@ -520,7 +513,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 				};
 			}
 
-			nacosConfigManager.getConfigService()
+			getNacosConfigManager().getConfigService()
 					.addListener(dataId, group, listener);
 			targetListenerMap.put(refreshTargetKey, listener);
 
@@ -605,7 +598,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 				};
 			}
 
-			nacosConfigManager.getConfigService()
+			getNacosConfigManager().getConfigService()
 					.addListener(dataId, group, listener);
 			targetListenerMap.put(refreshTargetKey, listener);
 			return true;
@@ -736,7 +729,13 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
-		nacosConfigManager = this.applicationContext.getBean(NacosConfigManager.class);
+	}
+
+	private NacosConfigManager getNacosConfigManager() {
+		if (nacosConfigManager == null) {
+			nacosConfigManager = this.applicationContext.getBean(NacosConfigManager.class);
+		}
+		return nacosConfigManager;
 	}
 
 	private static String[] getNullPropertyNames(Object source) {
