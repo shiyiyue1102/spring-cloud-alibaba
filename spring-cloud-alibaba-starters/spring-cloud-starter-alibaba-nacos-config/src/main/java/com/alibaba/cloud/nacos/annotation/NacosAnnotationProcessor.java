@@ -58,20 +58,37 @@ import org.springframework.util.ReflectionUtils;
 
 public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrdered, ApplicationContextAware {
 
-	private NacosConfigManager nacosConfigManager;
-
-	private ApplicationContext applicationContext;
-
 	private final static Logger log = LoggerFactory
 			.getLogger(NacosAnnotationProcessor.class);
+	private NacosConfigManager nacosConfigManager;
+	private ApplicationContext applicationContext;
+	private Map<String, TargetRefreshable> targetListenerMap = new ConcurrentHashMap<>();
+	private Map<String, AtomicReference<String>> groupKeyCache = new ConcurrentHashMap<>();
+
+	private static String[] getNullPropertyNames(Object source) {
+		final BeanWrapper src = new BeanWrapperImpl(source);
+		PropertyDescriptor[] pds = src.getPropertyDescriptors();
+		Set<String> nullPropertyNames = new HashSet<>();
+		for (PropertyDescriptor pd : pds) {
+			String propertyName = pd.getName();
+			try {
+				Object propertyValue = src.getPropertyValue(propertyName);
+				if (propertyValue == null) {
+					nullPropertyNames.add(propertyName);
+				}
+			}
+			catch (NotReadablePropertyException e) {
+				//ignore
+				nullPropertyNames.add(propertyName);
+			}
+		}
+		return nullPropertyNames.toArray(new String[0]);
+	}
 
 	@Override
 	public int getOrder() {
 		return 0;
 	}
-
-	private Map<String, TargetRefreshable> targetListenerMap = new ConcurrentHashMap<>();
-	private Map<String, AtomicReference<String>> groupKeyCache = new ConcurrentHashMap<>();
 
 	private String getGroupKeyContent(String dataId, String group) throws Exception {
 		if (groupKeyCache.containsKey(GroupKey.getKey(dataId, group))) {
@@ -79,12 +96,12 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 		}
 		synchronized (this) {
 			if (!groupKeyCache.containsKey(GroupKey.getKey(dataId, group))) {
-				String content = nacosConfigManager.getConfigService().getConfig(dataId, group, 5000);
+				String content = getNacosConfigManager().getConfigService().getConfig(dataId, group, 5000);
 				groupKeyCache.put(GroupKey.getKey(dataId, group), new AtomicReference<>(content));
 
 				log.info("[Nacos Config] Listening config for annotation: dataId={}, group={}", dataId,
 						group);
-				nacosConfigManager.getConfigService().addListener(dataId, group, new AbstractListener() {
+				getNacosConfigManager().getConfigService().addListener(dataId, group, new AbstractListener() {
 					@Override
 					public void receiveConfigInfo(String s) {
 						groupKeyCache.get(GroupKey.getKey(dataId, group)).set(s);
@@ -218,7 +235,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 					}
 				};
 			}
-			nacosConfigManager.getConfigService()
+			getNacosConfigManager().getConfigService()
 					.addListener(dataId, group, listener);
 			targetListenerMap.put(refreshTargetKey, listener);
 		}
@@ -264,7 +281,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 				}
 			};
 			nacosPropertiesKeyListener.setLastContent(getGroupKeyContent(dataId, group));
-			nacosConfigManager.getConfigService().addListener(dataId, group,
+			getNacosConfigManager().getConfigService().addListener(dataId, group,
 					nacosPropertiesKeyListener);
 			targetListenerMap.put(refreshTargetKey, nacosPropertiesKeyListener);
 		}
@@ -376,7 +393,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 				};
 			}
 
-			nacosConfigManager.getConfigService().addListener(dataId, group, listener);
+			getNacosConfigManager().getConfigService().addListener(dataId, group, listener);
 			targetListenerMap.put(refreshTargetKey, listener);
 			if (annotation.initNotify() && org.springframework.util.StringUtils.hasText(configInfo)) {
 				try {
@@ -396,7 +413,6 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 			throw new RuntimeException(e);
 		}
 	}
-
 
 	Object convertContentToTargetType(String rawContent, Type type) {
 
@@ -513,7 +529,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 				};
 			}
 
-			nacosConfigManager.getConfigService()
+			getNacosConfigManager().getConfigService()
 					.addListener(dataId, group, listener);
 			targetListenerMap.put(refreshTargetKey, listener);
 
@@ -598,7 +614,7 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 				};
 			}
 
-			nacosConfigManager.getConfigService()
+			getNacosConfigManager().getConfigService()
 					.addListener(dataId, group, listener);
 			targetListenerMap.put(refreshTargetKey, listener);
 			return true;
@@ -726,29 +742,15 @@ public class NacosAnnotationProcessor implements BeanPostProcessor, PriorityOrde
 		}
 	}
 
+	private NacosConfigManager getNacosConfigManager() {
+		if (nacosConfigManager == null) {
+			nacosConfigManager = applicationContext.getBean(NacosConfigManager.class);
+		}
+		return nacosConfigManager;
+	}
+
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
-		nacosConfigManager = this.applicationContext.getBean(NacosConfigManager.class);
-	}
-
-	private static String[] getNullPropertyNames(Object source) {
-		final BeanWrapper src = new BeanWrapperImpl(source);
-		PropertyDescriptor[] pds = src.getPropertyDescriptors();
-		Set<String> nullPropertyNames = new HashSet<>();
-		for (PropertyDescriptor pd : pds) {
-			String propertyName = pd.getName();
-			try {
-				Object propertyValue = src.getPropertyValue(propertyName);
-				if (propertyValue == null) {
-					nullPropertyNames.add(propertyName);
-				}
-			}
-			catch (NotReadablePropertyException e) {
-				//ignore
-				nullPropertyNames.add(propertyName);
-			}
-		}
-		return nullPropertyNames.toArray(new String[0]);
 	}
 }
